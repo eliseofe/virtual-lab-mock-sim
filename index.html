@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Virtual Lab mock-sim</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">Virtual Lab diagnostic client</p>
+        <h1>mock-sim</h1>
+      </div>
+      <div id="identity" class="identity">Signed out</div>
+    </header>
+
+    <section id="message" class="message" hidden></section>
+
+    <section id="auth-panel" class="card">
+      <h2>Registry sign in</h2>
+      <p>This client contains no simulator. It only exercises identity, experiment storage, organization and synchronization.</p>
+      <label>Email <input id="email" type="email" autocomplete="email" /></label>
+      <label>Password <input id="password" type="password" autocomplete="current-password" /></label>
+      <div class="actions">
+        <button id="sign-in">Sign in</button>
+        <button id="sign-up" class="secondary">Create account</button>
+      </div>
+    </section>
+
+    <section id="consent-panel" class="card" hidden>
+      <h2>Authorize AI experiment access</h2>
+      <p><strong id="oauth-client">AI client</strong> is requesting access to your Virtual Lab experiment registry.</p>
+      <ul>
+        <li>Read and edit experiments you can access.</li>
+        <li>Create experiments and organize your collections.</li>
+        <li>Archive, restore and permanently delete eligible working experiments.</li>
+      </ul>
+      <p class="muted">This does not grant simulator execution, results, GitHub, shell, filesystem or deployment access.</p>
+      <p class="muted">Requested scopes: <code id="oauth-scopes"></code></p>
+      <div class="actions">
+        <button id="oauth-approve">Approve</button>
+        <button id="oauth-deny" class="secondary">Deny</button>
+      </div>
+    </section>
+
+    <section id="workspace" hidden>
+      <div class="toolbar card">
+        <div>
+          <strong id="workspace-user"></strong>
+          <span id="sync-state" class="muted">Idle</span>
+        </div>
+        <div class="actions compact">
+          <button id="refresh" class="secondary">Refresh</button>
+          <button id="sign-out" class="secondary">Sign out</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <aside class="card sidebar">
+          <div class="section-head">
+            <h2>Collections</h2>
+            <button id="new-collection" class="secondary small">+ Collection</button>
+          </div>
+          <button class="nav active" data-collection="all">All active</button>
+          <button class="nav" data-collection="unfiled">Unfiled</button>
+          <div id="collections"></div>
+          <button class="nav" data-collection="archived">Archived</button>
+
+          <div class="section-head experiments-head">
+            <h2>Experiments</h2>
+            <button id="new-experiment" class="secondary small">+ Experiment</button>
+          </div>
+          <div id="experiments" class="experiment-list"></div>
+        </aside>
+
+        <section class="card editor">
+          <div id="empty-editor" class="empty">Select or create an experiment.</div>
+          <form id="experiment-form" hidden>
+            <div class="editor-head">
+              <div>
+                <label>Title <input id="title" required /></label>
+                <label>Description <input id="description" /></label>
+              </div>
+              <div class="diagnostics">
+                <span>Revision <strong id="revision">—</strong></span>
+                <span id="lifecycle">—</span>
+              </div>
+            </div>
+
+            <label>Collection
+              <select id="collection-select"></select>
+            </label>
+            <label>Configuration / parameters
+              <textarea id="config-source" spellcheck="false"></textarea>
+            </label>
+            <label>Initialization source
+              <textarea id="initializer-source" spellcheck="false"></textarea>
+            </label>
+            <label>Controller source
+              <textarea id="controller-source" spellcheck="false"></textarea>
+            </label>
+
+            <div class="actions">
+              <button type="submit">Save</button>
+              <button type="button" id="archive" class="secondary">Archive</button>
+              <button type="button" id="restore" class="secondary" hidden>Restore</button>
+              <button type="button" id="delete" class="danger">Permanent delete</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
