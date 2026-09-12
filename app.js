@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.111.0'
 
 const SUPABASE_URL = 'https://izdmmudfrmqhvlgepwes.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_MKaLNxnqvYbJUyik9zN7WA_r4ie2P5d'
@@ -31,9 +31,7 @@ function showMessage(text, kind = 'info') {
   els.message.className = `message${kind === 'error' ? ' error' : ''}`
   els.message.hidden = !text
 }
-
 function setSync(text) { els.syncState.textContent = text }
-
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>'"]/g, (ch) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
@@ -45,64 +43,53 @@ async function registryProfile() {
   if (error) throw error
   return data
 }
-
 async function loadCollections() {
-  const { data, error } = await supabase
-    .from('experiment_collections')
-    .select('id,name,created_at,updated_at')
-    .order('name')
+  const { data, error } = await supabase.from('experiment_collections')
+    .select('id,name,created_at,updated_at').order('name')
   if (error) throw error
   collections = data ?? []
 }
-
 async function loadExperiments() {
   let query = supabase.from('experiments')
     .select('id,owner_id,collection_id,title,description,lifecycle,visibility,revision,updated_at')
-    .eq('owner_id', user.id)
-    .order('updated_at', { ascending: false })
-
+    .eq('owner_id', user.id).order('updated_at', { ascending: false })
   if (selectedFilter === 'archived') query = query.eq('lifecycle', 'archived')
   else {
     query = query.eq('lifecycle', 'active')
     if (selectedFilter === 'unfiled') query = query.is('collection_id', null)
     else if (selectedFilter !== 'all') query = query.eq('collection_id', selectedFilter)
   }
-
   const { data, error } = await query
   if (error) throw error
   experiments = data ?? []
 }
-
 async function readExperiment(id) {
   const { data, error } = await supabase.from('experiments').select('*').eq('id', id).maybeSingle()
   if (error) throw error
   if (!data) throw new Error('Experiment no longer exists or is not visible to this user.')
   return data
 }
-
 function collectionName(id) {
-  return collections.find((collection) => collection.id === id)?.name ?? 'Unfiled'
+  return collections.find((c) => c.id === id)?.name ?? 'Unfiled'
 }
-
 function renderCollectionSelect() {
   const intended = selected?.collection_id ?? els.collectionSelect.value ?? ''
   els.collectionSelect.innerHTML = '<option value="">Unfiled</option>'
-  for (const collection of collections) {
+  for (const c of collections) {
     const option = document.createElement('option')
-    option.value = collection.id
-    option.textContent = collection.name
+    option.value = c.id
+    option.textContent = c.name
     els.collectionSelect.append(option)
   }
   els.collectionSelect.value = intended
 }
-
 function renderCollections() {
   els.collections.innerHTML = ''
-  for (const collection of collections) {
+  for (const c of collections) {
     const button = document.createElement('button')
-    button.className = `nav${selectedFilter === collection.id ? ' active' : ''}`
-    button.dataset.collection = collection.id
-    button.textContent = collection.name
+    button.className = `nav${selectedFilter === c.id ? ' active' : ''}`
+    button.dataset.collection = c.id
+    button.textContent = c.name
     els.collections.append(button)
   }
   document.querySelectorAll('button.nav').forEach((button) => {
@@ -110,7 +97,6 @@ function renderCollections() {
   })
   renderCollectionSelect()
 }
-
 function renderExperiments() {
   els.experiments.innerHTML = ''
   if (!experiments.length) {
@@ -120,15 +106,14 @@ function renderExperiments() {
     els.experiments.append(empty)
     return
   }
-  for (const experiment of experiments) {
+  for (const exp of experiments) {
     const button = document.createElement('button')
-    button.className = selected?.id === experiment.id ? 'active' : ''
-    button.dataset.experiment = experiment.id
-    button.innerHTML = `<strong>${escapeHtml(experiment.title)}</strong><br><span class="muted">${escapeHtml(collectionName(experiment.collection_id))} · r${experiment.revision}</span>`
+    button.className = selected?.id === exp.id ? 'active' : ''
+    button.dataset.experiment = exp.id
+    button.innerHTML = `<strong>${escapeHtml(exp.title)}</strong><br><span class="muted">${escapeHtml(collectionName(exp.collection_id))} · r${exp.revision}</span>`
     els.experiments.append(button)
   }
 }
-
 function renderEditor() {
   if (!selected) {
     els.emptyEditor.hidden = false
@@ -151,14 +136,12 @@ function renderEditor() {
   dirty = false
   setSync(`Synced · revision ${selected.revision}`)
 }
-
 async function selectExperiment(id) {
   if (dirty && !confirm('Discard unsaved local edits and open another experiment?')) return
   selected = await readExperiment(id)
   renderExperiments()
   renderEditor()
 }
-
 async function refreshWorkspace({ preserveSelection = true } = {}) {
   setSync('Refreshing…')
   await Promise.all([loadCollections(), loadExperiments()])
@@ -171,7 +154,6 @@ async function refreshWorkspace({ preserveSelection = true } = {}) {
   renderEditor()
   if (!selected) setSync('Synced')
 }
-
 async function createCollection() {
   const name = prompt('Collection/project name')?.trim()
   if (!name) return
@@ -181,22 +163,14 @@ async function createCollection() {
   renderCollections()
   showMessage(`Collection “${name}” created.`)
 }
-
 async function createExperiment() {
   if (dirty && !confirm('Discard unsaved local edits and create a new experiment?')) return
   const initialCollection = selectedFilter !== 'all' && selectedFilter !== 'unfiled' && selectedFilter !== 'archived'
-    ? selectedFilter
-    : null
+    ? selectedFilter : null
   const { data, error } = await supabase.from('experiments').insert({
-    owner_id: user.id,
-    collection_id: initialCollection,
-    title: 'Untitled experiment',
-    description: '',
-    config_source: '',
-    initializer_source: '',
-    controller_source: '',
-    created_by_actor: 'human',
-    updated_by_actor: 'human',
+    owner_id: user.id, collection_id: initialCollection, title: 'Untitled experiment', description: '',
+    config_source: '', initializer_source: '', controller_source: '',
+    created_by_actor: 'human', updated_by_actor: 'human',
   }).select('*').single()
   if (error) throw error
   selectedFilter = initialCollection ?? 'all'
@@ -206,28 +180,19 @@ async function createExperiment() {
   els.title.focus()
   els.title.select()
 }
-
 async function saveExperiment(event) {
   event.preventDefault()
   if (!selected) return
   setSync('Saving…')
   const patch = {
-    title: els.title.value.trim(),
-    description: els.description.value,
+    title: els.title.value.trim(), description: els.description.value,
     collection_id: els.collectionSelect.value || null,
-    config_source: els.configSource.value,
-    initializer_source: els.initializerSource.value,
-    controller_source: els.controllerSource.value,
-    updated_by_actor: 'human',
-    updated_by_ai_client: null,
+    config_source: els.configSource.value, initializer_source: els.initializerSource.value,
+    controller_source: els.controllerSource.value, updated_by_actor: 'human', updated_by_ai_client: null,
   }
   if (!patch.title) throw new Error('Experiment title cannot be empty.')
-  const { data, error } = await supabase.from('experiments')
-    .update(patch)
-    .eq('id', selected.id)
-    .eq('revision', selected.revision)
-    .select('*')
-    .maybeSingle()
+  const { data, error } = await supabase.from('experiments').update(patch)
+    .eq('id', selected.id).eq('revision', selected.revision).select('*').maybeSingle()
   if (error) throw error
   if (!data) {
     setSync('Conflict')
@@ -238,15 +203,11 @@ async function saveExperiment(event) {
   await refreshWorkspace()
   renderEditor()
 }
-
 async function setLifecycle(lifecycle) {
   if (!selected) return
   const { data, error } = await supabase.from('experiments')
     .update({ lifecycle, updated_by_actor: 'human', updated_by_ai_client: null })
-    .eq('id', selected.id)
-    .eq('revision', selected.revision)
-    .select('*')
-    .maybeSingle()
+    .eq('id', selected.id).eq('revision', selected.revision).select('*').maybeSingle()
   if (error) throw error
   if (!data) throw new Error('Lifecycle change rejected because the experiment changed remotely. Refresh first.')
   selected = data
@@ -254,24 +215,18 @@ async function setLifecycle(lifecycle) {
   selectedFilter = lifecycle === 'archived' ? 'archived' : 'all'
   await refreshWorkspace()
 }
-
 async function permanentlyDelete() {
   if (!selected) return
   const name = selected.title
   if (!confirm(`Permanently delete working experiment “${name}”? This cannot be undone.`)) return
-  const { data, error } = await supabase.from('experiments')
-    .delete()
-    .eq('id', selected.id)
-    .eq('revision', selected.revision)
-    .select('id')
-    .maybeSingle()
+  const { data, error } = await supabase.from('experiments').delete()
+    .eq('id', selected.id).eq('revision', selected.revision).select('id').maybeSingle()
   if (error) throw error
   if (!data) throw new Error('Delete rejected because the experiment changed remotely. Refresh first.')
   selected = null
   dirty = false
   await refreshWorkspace({ preserveSelection: false })
 }
-
 async function pollSelected() {
   if (!user || !selected) return
   try {
@@ -290,20 +245,18 @@ async function pollSelected() {
     setSync('Sync check failed')
   }
 }
-
 async function renderConsent() {
   if (!authorizationId || !user) return false
-  const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId)
+  const oauth = supabase.auth.oauth
+  if (!oauth) throw new Error('OAuth client methods are unavailable. Reload this page to fetch the current mock-sim client.')
+  const { data, error } = await oauth.getAuthorizationDetails(authorizationId)
   if (error) throw error
   if (!data) throw new Error('OAuth authorization request was not found.')
-
-  // Supabase may return an OAuthRedirect when this user already granted consent.
   if (!('authorization_id' in data)) {
     if (!data.redirect_url) throw new Error('OAuth authorization response did not include a redirect URL.')
     location.assign(data.redirect_url)
     return true
   }
-
   els.authPanel.hidden = true
   els.workspace.hidden = true
   els.consentPanel.hidden = false
@@ -311,7 +264,6 @@ async function renderConsent() {
   els.oauthScopes.textContent = data.scope?.trim() || 'email'
   return true
 }
-
 async function initializeSession() {
   const { data } = await supabase.auth.getSession()
   user = data.session?.user ?? null
@@ -324,7 +276,6 @@ async function initializeSession() {
     clearInterval(pollTimer)
     return
   }
-
   profile = await registryProfile()
   els.identity.textContent = profile.display_name
   els.workspaceUser.textContent = `${profile.display_name} · ${user.email ?? user.id}`
@@ -336,7 +287,6 @@ async function initializeSession() {
   clearInterval(pollTimer)
   pollTimer = setInterval(pollSelected, 2500)
 }
-
 async function authenticate(mode) {
   showMessage('')
   const email = els.email.value.trim()
@@ -347,16 +297,17 @@ async function authenticate(mode) {
     if (error) throw error
   } else {
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { display_name: email.split('@')[0] } },
+      email, password,
+      options: {
+        data: { display_name: email.split('@')[0] },
+        emailRedirectTo: 'https://eliseofe.github.io/virtual-lab-mock-sim/',
+      },
     })
     if (error) throw error
-    if (!data.session) showMessage('Account created. Confirm the email if requested, then sign in.')
+    if (!data.session) showMessage('Account created. Confirm the email, then return to your AI client and reconnect.')
   }
   await initializeSession()
 }
-
 async function run(action) {
   try { await action() }
   catch (error) {
