@@ -25,6 +25,8 @@ let selectedFilter = 'all'
 let dirty = false
 let pollTimer = null
 const authorizationId = new URLSearchParams(location.search).get('authorization_id')
+const confirmationRedirectUrl = new URL(location.href)
+confirmationRedirectUrl.hash = ''
 
 function showMessage(text, kind = 'info') {
   els.message.textContent = text
@@ -248,7 +250,7 @@ async function pollSelected() {
 async function renderConsent() {
   if (!authorizationId || !user) return false
   const oauth = supabase.auth.oauth
-  if (!oauth) throw new Error('OAuth client methods are unavailable. Reload this page to fetch the current mock-sim client.')
+  if (!oauth) throw new Error('OAuth client methods are unavailable. Reload this page to fetch the current authorization client.')
   const { data, error } = await oauth.getAuthorizationDetails(authorizationId)
   if (error) throw error
   if (!data) throw new Error('OAuth authorization request was not found.')
@@ -300,11 +302,11 @@ async function authenticate(mode) {
       email, password,
       options: {
         data: { display_name: email.split('@')[0] },
-        emailRedirectTo: 'https://eliseofe.github.io/virtual-lab-mock-sim/',
+        emailRedirectTo: confirmationRedirectUrl.toString(),
       },
     })
     if (error) throw error
-    if (!data.session) showMessage('Account created. Confirm the email, then return to your AI client and reconnect.')
+    if (!data.session) showMessage('Account created. Confirm the email, then return here to continue connecting your AI assistant.')
   }
   await initializeSession()
 }
