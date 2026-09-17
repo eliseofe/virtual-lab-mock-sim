@@ -3,49 +3,47 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="virtual-lab-build" content="2026-09-12-oauth2" />
-  <title>Virtual Lab mock-sim</title>
-  <link rel="stylesheet" href="./styles.css?v=20260912-oauth2" />
+  <meta name="virtual-lab-build" content="2026-09-18-oauth3" />
+  <title>Virtual Lab — Connect an AI assistant</title>
+  <link rel="stylesheet" href="./styles.css?v=20260918-oauth3" />
 </head>
 <body>
   <main class="shell">
     <header>
       <div>
-        <p class="eyebrow">Virtual Lab diagnostic client</p>
-        <h1>mock-sim</h1>
+        <p class="eyebrow">Virtual Lab</p>
+        <h1>Connect an AI assistant</h1>
       </div>
-      <div>
-        <div id="identity" class="identity">Signed out</div>
-        <div class="muted">build 2026-09-12-oauth2</div>
-      </div>
+      <div id="identity" class="identity">Signed out</div>
     </header>
 
     <section id="message" class="message" hidden></section>
 
     <section id="auth-panel" class="card">
-      <h2>Registry sign in</h2>
-      <p>This client contains no simulator. It only exercises identity, experiment storage, organization and synchronization.</p>
+      <h2>Sign in to Virtual Lab</h2>
+      <p>Sign in with your Virtual Lab account to continue connecting your AI assistant. If you are new, create an account here first.</p>
       <label>Email <input id="email" type="email" autocomplete="email" /></label>
       <label>Password <input id="password" type="password" autocomplete="current-password" /></label>
       <div class="actions">
         <button id="sign-in">Sign in</button>
         <button id="sign-up" class="secondary">Create account</button>
       </div>
+      <p class="muted">Your account controls access to your private Experiment workspace. The AI connection does not receive simulator-development, GitHub, shell, filesystem, or deployment access.</p>
     </section>
 
     <section id="consent-panel" class="card" hidden>
-      <h2>Authorize AI experiment access</h2>
-      <p><strong id="oauth-client">AI client</strong> is requesting access to your Virtual Lab experiment registry.</p>
+      <h2>Connect your AI assistant</h2>
+      <p><strong id="oauth-client">AI client</strong> is requesting access to your Virtual Lab Experiment workspace.</p>
       <ul>
-        <li>Read and edit experiments you can access.</li>
-        <li>Create experiments and organize your collections.</li>
-        <li>Archive, restore and permanently delete eligible working experiments.</li>
+        <li>Read and edit Experiments you can access.</li>
+        <li>Create Experiments and organize your collections.</li>
+        <li>Archive, restore and permanently delete eligible working Experiments.</li>
       </ul>
       <p class="muted">This does not grant simulator execution, results, GitHub, shell, filesystem or deployment access.</p>
       <p class="muted">Requested scopes: <code id="oauth-scopes"></code></p>
       <div class="actions">
-        <button id="oauth-approve">Approve</button>
-        <button id="oauth-deny" class="secondary">Deny</button>
+        <button id="oauth-approve">Connect</button>
+        <button id="oauth-deny" class="secondary">Cancel</button>
       </div>
     </section>
 
@@ -118,6 +116,6 @@
     </section>
   </main>
 
-  <script type="module" src="./app.js?v=20260912-oauth2"></script>
+  <script type="module" src="./app.js?v=20260918-oauth3"></script>
 </body>
 </html>
